@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрация | Случайный код</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .register-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 32px;
+            padding: 40px 32px;
+            width: 100%;
+            max-width: 480px;
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s ease;
+        }
+
+        .register-card:hover {
+            transform: translateY(-5px);
+        }
+
+        h1 {
+            font-size: 32px;
+            font-weight: 700;
+            background: linear-gradient(120deg, #667eea, #764ba2);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #6b7280;
+            margin-bottom: 32px;
+            font-size: 14px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #1f2937;
+            margin-bottom: 8px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 16px;
+            font-size: 16px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 20px;
+            transition: all 0.2s;
+            background: #f9fafb;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+        }
+
+        .random-block {
+            border-radius: 20px;
+            padding: 16px;
+            margin: 24px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+            color: #374151;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .random-code {
+            font-family: 'Fira Code', 'Courier New', monospace;
+            background: #1e293b;
+            color: #38bdf8;
+            font-weight: 700;
+            letter-spacing: 2px;
+        }
+
+        .refresh-btn {
+            background: #667eea;
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 40px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .refresh-btn:hover {
+            background: #5a67d8;
+        }
+
+        .register-btn {
+            width: 100%;
+            background: linear-gradient(95deg, #667eea, #764ba2);
+            border: none;
+            padding: 14px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 16px;
+            color: white;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            margin-top: 8px;
+        }
+
+        .register-btn:hover {
+            opacity: 0.9;
+        }
+
+        .footer {
+            text-align: center;
+            font-size: 13px;
+            color: #9ca3af;
+            margin-top: 24px;
+        }
+
+        .error {
+            color: #e53e3e;
+            font-size: 12px;
+            margin-top: 6px;
+            display: none;
+        }
+        }
+    </style>
+        <h1>Создать аккаунт</h1>
+            <div class="input-group">
+                <label>👤 Имя пользователя</label>
+                <input type="text" id="username" placeholder="AlexDev" required>
+            </div>
+
+            <div class="input-group">
+                <label>📧 Email</label>
+                <input type="email" id="email" placeholder="hello@example.com" required>
+            </div>
+
+            <div class="input-group">
+                <label>🔒 Пароль</label>
+                <input type="password" id="password" placeholder="••••••••" required>
+            </div>
+
+            <!-- Блок случайного кода (рандомная капча/верификация) -->
+            <div class="random-block">
+                <div class="random-label">
+                    🎲 Код подтверждения:
+                </div>
+                <div class="random-code" id="randomCodeDisplay">A7B3F</div>
+                <button type="button" class="refresh-btn" id="refreshCodeBtn">
+                    ⟳ Обновить
+                </button>
+            </div>
+
+            <div class="input-group">
+                <label>✏️ Введите код выше</label>
+                <input type="text" id="verificationCode" placeholder="Например A7B3F" autocomplete="off">
+                <div class="error" id="codeError">Неверный проверочный код</div>
+            </div>
+
+            <button type="submit" class="register-btn">Зарегистрироваться →</button>
+            <div class="success-message" id="successMessage">✅ Регистрация успешна (демо)</div>
+            <div class="footer">Это демонстрационная форма · код генерируется случайно</div>
+        </form>
+    </div>
+
+    <script>
+        // --- Функция генерации случайного кода (6 символов: буквы + цифры) ---
+        function generateRandomCode(length = 6) {
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ0123456789';
+            let result = '';
+            for (let i = 0; i < length; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        }
+
+        // Текущий код
+        let currentCode = generateRandomCode(6);
+
+        // Элементы DOM
+        const randomCodeSpan = document.getElementById('randomCodeDisplay');
+        const refreshBtn = document.getElementById('refreshCodeBtn');
+        const verificationInput = document.getElementById('verificationCode');
+        const codeErrorDiv = document.getElementById('codeError');
+        const successDiv = document.getElementById('successMessage');
+        const registerForm = document.getElementById('registerForm');
+
+        // Функция обновления отображения кода
+        function updateCodeDisplay() {
+            randomCodeSpan.textContent = currentCode;
+            // Очистить поле ввода и скрыть ошибку при смене кода
+            verificationInput.value = '';
+            codeErrorDiv.style.display = 'none';
+            successDiv.style.display = 'none';
+        }
+
+        // Генерация нового рандомного кода
+        function refreshCode() {
+            currentCode = generateRandomCode(6);
+            updateCodeDisplay();
+        }
+
+        // Проверка соответствия кода
+        function isCodeValid() {
+            const enteredCode = verificationInput.value.trim().toUpperCase();
+            return enteredCode === currentCode;
+        }
+
+        // Обработка отправки формы
+        registerForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+
+            // Базовая валидация полей (не пустые)
+            const username = document.getElementById('username').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+
+            if (!username || !email || !password) {
+                alert('Пожалуйста, заполните все поля');
+                return;
+            }
+
+            // Проверка кода
+            if (!isCodeValid()) {
+                codeErrorDiv.style.display = 'block';
+                successDiv.style.display = 'none';
+                return;
+            }
+
+            codeErrorDiv.style.display = 'none';
+            // Имитация успешной регистрации
+            successDiv.style.display = 'block';
+            // Можно очистить форму или оставить как пример
+            // (в реальном проекте тут был бы запрос на сервер)
+            console.log('Регистрация:', { username, email, password, verificationCode: currentCode });
+        });
+
+        // Обновить код по кнопке
+        refreshBtn.addEventListener('click', () => {
+            refreshCode();
+        });
+
+        // При загрузке страницы сгенерируем свежий код (на случай, если захочется обновить)
+        refreshCode();
+
+        // Если пользователь начинает вводить код, убираем сообщение об ошибке
+        verificationInput.addEventListener('input', () => {
+            if (codeErrorDiv.style.display === 'block') {
+                codeErrorDiv.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>        <div class="subtitle">Присоединяйся к сообществу</div>
+
+        <form id="registerForm">
+</head>
+<body>
+    <div class="register-card">
+
+            padding: 12px;
+            display: none;
+            border-radius: 20px;
+            text-align: center;
+            margin-top: 16px;
+        .success-message {
+            background: #c6f6d5;
+            color: #22543d;
+            padding: 8px 16px;
+            border-radius: 40px;
+            font-size: 22px;
+
+        .random-label {
+            font-weight: 600;
+
